@@ -10,11 +10,18 @@ DetectHiddenWindows, On
 DetectHiddenText, On
 SetControlDelay, -1
 
-; Default values
+; Default values (fallbacks)
 recinputs := 2
 recblock := 128
 playinputs := 0
 playblock := 512
+
+; Load saved values from INI
+IniRead, recinputs, settings.ini, Recording, Inputs, %recinputs%
+IniRead, recblock, settings.ini, Recording, BlockSize, %recblock%
+IniRead, playinputs, settings.ini, Playback, Inputs, %playinputs%
+IniRead, playblock, settings.ini, Playback, BlockSize, %playblock%
+
 
 ; Control variables
 InputBox :=
@@ -28,35 +35,35 @@ F11::
 if (!GuiInitialized) {
     Gui, +AlwaysOnTop +ToolWindow -Caption
     Gui, Color, 1E1E1E, F0F0F0
-    Gui, Font, s10, Segui UI
+    Gui, Font, s11, Segui UI
 
     ; Initial icon and label
     Gui, Add, Picture, x10 y10 w30 h30 vProfileIcon, sound.ico
-    Gui, Add, Text, x50 y15 w250 h25 cF0F0F0 vTitleLabel, REAPER PLAY/REC Profile Switcher
+    Gui, Add, Text, x50 y17 w250 h25 cF0F0F0 vTitleLabel, REAPER PLAY/REC Profile Switcher
     Gui, Add, Text, x50 y15 w250 h25 BackgroundTrans vDragOverlay gStartDrag
     GuiControl, +Cursor, DragOverlay, SizeAll
 
     ; Profile section
-    Gui, Add, GroupBox, x10 y50 w380 h180, Profiles
+    Gui, Add, GroupBox, x10 y50 w380 h145 cF0F0F0, Set and Apply Profiles
 
     ; Recording profile
-    Gui, Add, Button, x20 y70 w180 h30 gRecordingProfile, Apply Recording Profile
-    Gui, Add, Text, x210 y75 w80 h20 cF0F0F0, Input Ch:
-    Gui, Add, ComboBox, x290 y70 w80 vRecInputDefault, 0|2|4|8|16
+    Gui, Add, Button, x20 y75 w175 h30 gSetRecordingDefaults, Set Recording Defaults
+    GuiControl, +Cursor, RecHover, Hand
+    Gui, Add, Button, x200 y75 w175 h30 gRecordingProfile, Apply Recording Profile
 
-    Gui, Add, Text, x210 y100 w80 h20 cF0F0F0, Block Size:
-    Gui, Add, ComboBox, x290 y100 w80 vRecBlockDefault, 64|128|256|512|1024
-
-    Gui, Add, Button, x210 y130 w160 h25 gSetRecordingDefaults, Set Recording Defaults
+    ; Channels/ Block Size Combobox
+    Gui, Add, Text, x25 y118 w80 h20 cF0F0F0, Input Ch:
+    Gui, Add, ComboBox, x100 y115 w80 vRecInputDefault, 0|2|4|8|16
+    Gui, Add, Text, x205 y118 w80 h20 cF0F0F0, Block Size:
+    Gui, Add, ComboBox, x290 y115 w80 vRecBlockDefault, 64|128|256|512|1024
 
     ; Playback profile
-    Gui, Add, Button, x20 y170 w180 h30 gPlaybackProfile, Apply Playback Profile
-    Gui, Add, Button, x210 y170 w160 h25 gSetPlaybackDefaults, Set Playback Defaults
+    Gui, Add, Button, x20 y150 w175 h30 gSetPlaybackDefaults, Set Playback Defaults
+    Gui, Add, Button, x200 y150 w175 h30 gPlaybackProfile, Apply Playback Profile
 
     ; Utility buttons
-    Gui, Add, Button, x10 y240 w95 h30 gReloadScript, Reload Script
-    Gui, Add, Button, x115 y240 w95 h30 gExitScript, Exit
-
+    Gui, Add, Button, x10 y200 w95 h30 gReloadScript, Reload Script
+    Gui, Add, Button, x295 y200 w95 h30 gExitScript, Exit
     GuiInitialized := true
 }
 
@@ -69,11 +76,17 @@ return
 SetRecordingDefaults:
 GuiControlGet, recinputs,, RecInputDefault
 GuiControlGet, recblock,, RecBlockDefault
+IniWrite, %recinputs%, settings.ini, Recording, Inputs
+IniWrite, %recblock%, settings.ini, Recording, BlockSize
+
 return
 
 SetPlaybackDefaults:
 GuiControlGet, playinputs,, RecInputDefault
 GuiControlGet, playblock,, RecBlockDefault
+IniWrite, %playinputs%, settings.ini, Playback, Inputs
+IniWrite, %playblock%, settings.ini, Playback, BlockSize
+
 return
 
 RecordingProfile:
@@ -118,7 +131,6 @@ return
 
 ReloadScript:
 Reload
-return
 
 ExitScript:
 ExitApp
