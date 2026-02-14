@@ -1,0 +1,14 @@
+# Ignore settings and local configuration
+settings.ini
+*.ini
+
+# Ignore temporary AutoHotkey files
+*.log
+*.tmp
+
+# Ignore compiled executables (if you compile your scripts)
+*.exe
+
+# Ignore Windows system files
+Thumbs.db
+Desktop.ini
